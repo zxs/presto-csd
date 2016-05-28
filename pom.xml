@@ -2,10 +2,20 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <parent>
+    <groupId>com.facebook.presto</groupId>
+    <artifactId>presto-assembly</artifactId>
+    <version>0.139-cdh5.5.2</version>
+  </parent>
+
   <groupId>com.facebook.presto.csd</groupId>
   <artifactId>PRESTO</artifactId>
-  <version>0.1</version>
+  <version>0.139-cdh5.5.2</version>
   <name>presto-csd</name>
+
+  <properties>
+    <presto.version>${project.version}</presto.version>
+  </properties>
 
   <build>
     <plugins>
@@ -20,16 +30,6 @@
       <resource>
         <directory>src/main/resources</directory>
         <filtering>true</filtering>
-        <includes>
-          <include>**/*.sdl</include>
-        </includes>
-      </resource>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>false</filtering>
-        <excludes>
-          <exclude>**/*.sdl</exclude>
-        </excludes>
       </resource>
     </resources>
    </build>

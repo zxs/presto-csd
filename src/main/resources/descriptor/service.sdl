@@ -2,7 +2,7 @@
   "name" : "PRESTO",
   "label" : "Presto",
   "description" : "Distributed SQL Query Engine for Big Data",
-  "version" : "${project.version}",
+  "version" : "${presto.version}",
   "runAs" : {
     "user" : "presto",
     "group" : "presto"
@@ -16,29 +16,37 @@
     {
       "name" : "HIVE",
       "required" : "false"
+    },
+    {
+      "name" : "IMPALA",
+      "required" : "false"
+    },
+    {
+      "name" : "PHOENIX",
+      "required" : "false"
     }
   ],
   "commands" : [
     {
       "name" : "PrestoInitializeCoordinatorNodePropertiesCommand",
-      "label" : "Initialize node.properties",
-      "description" : "Initialize node.properties file.",
+      "label" : "Initialize Coordinator Node",
+      "description" : "Initialize Coordinator node.properties file.",
       "roleName" : "PRESTO_COORDINATOR",
       "roleCommand" : "coord_init",
       "runMode" : "all"
     },
     {
       "name" : "PrestoInitializeDiscoveryNodePropertiesCommand",
-      "label" : "Initialize node.properties",
-      "description" : "Initialize node.properties file.",
+      "label" : "Initialize Discovery Node",
+      "description" : "Initialize Discovery node.properties file.",
       "roleName" : "PRESTO_DISCOVERY",
       "roleCommand" : "discovery_init",
       "runMode" : "all"
     },
     {
       "name" : "PrestoInitializeWorkerNodePropertiesCommand",
-      "label" : "Initialize node.properties",
-      "description" : "Initialize node.properties file.",
+      "label" : "Initialize Worker Node",
+      "description" : "Initialize Worker node.properties file.",
       "roleName" : "PRESTO_WORKER",
       "roleCommand" : "worker_init",
       "runMode" : "all"
@@ -60,21 +68,12 @@
   "parameters" : [
     {
       "name" : "discovery_uri",
-      "label" : "discovery uri",
+      "label" : "Discovery URI",
       "description" : "discovery uri",
       "configName" : "discovery.uri",
       "required" : "true",
       "type" : "uri",
       "default" : "http://localhost:8080"
-    },
-    {
-      "name" : "hive_metastore_uri",
-      "label" : "hive.metastore.uri",
-      "description" : "hive.metastore.uri",
-      "configName" : "hive.metastore.uri",
-      "required" : "true",
-      "type" : "uri",
-      "default" : "thrift://localhost:9083"
     },
     {
       "name" : "mysql_connection_host",
@@ -111,6 +110,15 @@
       "required" : "true",
       "type" : "password",
       "default" : "password"
+    },
+    {
+      "name" : "log_level",
+      "label" : "Presto Log Level",
+      "description" : "Presto Log Level",
+      "configName" : "com.facebook.presto",
+      "required" : "true",
+      "type" : "string",
+      "default" : "INFO"
     }
   ],
   "rolesWithExternalLinks" : ["PRESTO_COORDINATOR", "PRESTO_DISCOVERY", "PRESTO_WORKER"],
@@ -131,8 +139,8 @@
       "commands" : [
         {
           "name" : "coord_init",
-          "label" : "Initialize node.properties.",
-          "description" : "Initialize node.properties.",
+          "label" : "Initialize Coordinator node.properties.",
+          "description" : "Initialize Coordinator node.properties.",
           "expectedExitCodes" : [0],
           "requiredRoleState" : "stopped",
           "commandRunner" : {
@@ -207,9 +215,14 @@
             ]
           },
           {
+            "filename" : "etc/log.properties",
+            "configFormat" : "properties",
+            "includedParams" : ["log_level"]
+          },
+          {
             "filename" : "etc/catalog/hive.properties",
             "configFormat" : "properties",
-            "includedParams" : ["hive_metastore_uri"],
+            "includedParams" : [],
             "excludedParams" : ["jvm_config"],
             "additionalConfigs" : [
               {
@@ -217,8 +230,12 @@
                 "value" : "hive-cdh5"
               },
               {
+                "key" : "hive.metastore.uri",
+                "value" : "{{hive-metastore-uri}}"
+              },
+              {
                 "key" : "hive.config.resources",
-                "value" : "etc/catalog/core-site.xml,etc/catalog/hdfs-site.xml"
+                "value" : "{{hive-conf}}/core-site.xml,{{hive-conf}}/hdfs-site.xml,{{hive-conf}}/hive-site.xml"
               }
             ]
           },
@@ -239,12 +256,110 @@
             ]
           },
           {
+            "filename" : "etc/catalog/impala.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "impala"
+              },
+              {
+                "key" : "connection-url",
+                "value" : "{{impala_connection_url}}"
+              },
+              {
+                "key" : "connection-user",
+                "value" : "impala"
+              },
+              {
+                "key" : "connection-password",
+                "value" : "Vf$DS%v@QfQqvqW3"
+              },
+              {
+                "key" : "connection-info",
+                "value" : "{{impala_connection_info}"
+              }
+            ]
+          },
+          {
+            "filename" : "etc/catalog/phoenix.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "phoenix"
+              },
+              {
+                "key" : "connection-url",
+                "value" : "{{phoenix_connection_url}}"
+              },
+              {
+                "key" : "connection-user",
+                "value" : "phoenix"
+              },
+              {
+                "key" : "connection-password",
+                "value" : "@#dXV4%AZeA342AR"
+              },
+              {
+                "key" : "connection-info",
+                "value" : "{{phoenix_connection_info}}"
+              }
+            ]
+          },
+          {
             "filename" : "etc/catalog/jmx.properties",
             "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
             "additionalConfigs" : [
               {
                 "key" : "connector.name",
                 "value" : "jmx"
+              }
+            ]
+          },
+          {
+            "filename" : "etc/catalog/default.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "raptor"
+              },
+              {
+                "key" : "metadata.db.type",
+                "value" : "h2"
+              },
+              {
+                "key" : "metadata.db.filename",
+                "value" : "./var/data/db/MetaStore"
+              },
+              {
+                "key" : "storage.data-directory",
+                "value" : "var/data"
+              }
+            ]
+          },
+          {
+            "filename" : "etc/catalog/tpch.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "tpch"
+              },
+              {
+                "key" : "tpch.splits-per-node",
+                "value" : "4"
               }
             ]
           },
@@ -272,8 +387,8 @@
       "commands" : [
         {
           "name" : "worker_init",
-          "label" : "Initialize node.properties.",
-          "description" : "Initialize node.properties.",
+          "label" : "Initialize Worker node.properties.",
+          "description" : "Initialize Worker node.properties.",
           "expectedExitCodes" : [0],
           "requiredRoleState" : "stopped",
           "commandRunner" : {
@@ -344,9 +459,14 @@
             ]
           },
           {
+            "filename" : "etc/log.properties",
+            "configFormat" : "properties",
+            "includedParams" : ["log_level"]
+          },
+          {
             "filename" : "etc/catalog/hive.properties",
             "configFormat" : "properties",
-            "includedParams" : ["hive_metastore_uri"],
+            "includedParams" : [],
             "excludedParams" : ["jvm_config"],
             "additionalConfigs" : [
               {
@@ -354,8 +474,12 @@
                 "value" : "hive-cdh5"
               },
               {
+                "key" : "hive.metastore.uri",
+                "value" : "{{hive-metastore-uri}}"
+              },
+              {
                 "key" : "hive.config.resources",
-                "value" : "etc/catalog/core-site.xml,etc/catalog/hdfs-site.xml"
+                "value" : "{{hive-conf}}/core-site.xml,{{hive-conf}}/hdfs-site.xml,{{hive-conf}}/hive-site.xml"
               }
             ]
           },
@@ -376,12 +500,110 @@
             ]
           },
           {
+            "filename" : "etc/catalog/impala.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "impala"
+              },
+              {
+                "key" : "connection-url",
+                "value" : "{{impala_connection_url}}"
+              },
+              {
+                "key" : "connection-user",
+                "value" : "impala"
+              },
+              {
+                "key" : "connection-password",
+                "value" : "Vf$DS%v@QfQqvqW3"
+              },
+              {
+                "key" : "connection-info",
+                "value" : "{{impala_connection_info}"
+              }
+            ]
+          },
+          {
+            "filename" : "etc/catalog/phoenix.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "phoenix"
+              },
+              {
+                "key" : "connection-url",
+                "value" : "{{phoenix_connection_url}}"
+              },
+              {
+                "key" : "connection-user",
+                "value" : "phoenix"
+              },
+              {
+                "key" : "connection-password",
+                "value" : "@#dXV4%AZeA342AR"
+              },
+              {
+                "key" : "connection-info",
+                "value" : "{{phoenix_connection_info}}"
+              }
+            ]
+          },
+          {
             "filename" : "etc/catalog/jmx.properties",
             "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
             "additionalConfigs" : [
               {
                 "key" : "connector.name",
                 "value" : "jmx"
+              }
+            ]
+          },
+          {
+            "filename" : "etc/catalog/default.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "raptor"
+              },
+              {
+                "key" : "metadata.db.type",
+                "value" : "h2"
+              },
+              {
+                "key" : "metadata.db.filename",
+                "value" : "./var/data/db/MetaStore"
+              },
+              {
+                "key" : "storage.data-directory",
+                "value" : "var/data"
+              }
+            ]
+          },
+          {
+            "filename" : "etc/catalog/tpch.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "tpch"
+              },
+              {
+                "key" : "tpch.splits-per-node",
+                "value" : "4"
               }
             ]
           },
@@ -409,8 +631,8 @@
       "commands" : [
         {
           "name" : "discovery_init",
-          "label" : "Initialize node.properties.",
-          "description" : "Initialize node.properties.",
+          "label" : "Initialize Discovery node.properties.",
+          "description" : "Initialize Discovery node.properties.",
           "expectedExitCodes" : [0],
           "requiredRoleState" : "stopped",
           "commandRunner" : {
@@ -422,9 +644,9 @@
         }
       ],
       "externalLink" : {
-       "name" : "discovery_web_ui",
-       "label" : "Discovery Web UI",
-       "url" : "http://${host}:${discovery_webui_port}"
+        "name" : "discovery_web_ui",
+        "label" : "Discovery Web UI",
+        "url" : "http://${host}:${discovery_webui_port}"
       },
       "topology" : { "minInstances" : 1, "maxInstances" : 1 },
       "parameters" : [
@@ -489,9 +711,14 @@
             ]
           },
           {
+            "filename" : "etc/log.properties",
+            "configFormat" : "properties",
+            "includedParams" : ["log_level"]
+          },
+          {
             "filename" : "etc/catalog/hive.properties",
             "configFormat" : "properties",
-            "includedParams" : ["hive_metastore_uri"],
+            "includedParams" : [],
             "excludedParams" : ["jvm_config"],
             "additionalConfigs" : [
               {
@@ -499,8 +726,12 @@
                 "value" : "hive-cdh5"
               },
               {
+                "key" : "hive.metastore.uri",
+                "value" : "{{hive-metastore-uri}}"
+              },
+              {
                 "key" : "hive.config.resources",
-                "value" : "etc/catalog/core-site.xml,etc/catalog/hdfs-site.xml"
+                "value" : "{{hive-conf}}/core-site.xml,{{hive-conf}}/hdfs-site.xml,{{hive-conf}}/hive-site.xml"
               }
             ]
           },
@@ -521,13 +752,110 @@
             ]
           },
           {
+            "filename" : "etc/catalog/impala.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "impala"
+              },
+              {
+                "key" : "connection-url",
+                "value" : "{{impala_connection_url}}"
+              },
+              {
+                "key" : "connection-user",
+                "value" : "impala"
+              },
+              {
+                "key" : "connection-password",
+                "value" : "Vf$DS%v@QfQqvqW3"
+              },
+              {
+                "key" : "connection-info",
+                "value" : "{{impala_connection_info}"
+              }
+            ]
+          },
+          {
+            "filename" : "etc/catalog/phoenix.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "phoenix"
+              },
+              {
+                "key" : "connection-url",
+                "value" : "{{phoenix_connection_url}}"
+              },
+              {
+                "key" : "connection-user",
+                "value" : "phoenix"
+              },
+              {
+                "key" : "connection-password",
+                "value" : "@#dXV4%AZeA342AR"
+              },
+              {
+                "key" : "connection-info",
+                "value" : "{{phoenix_connection_info}}"
+              }
+            ]
+          },
+          {
             "filename" : "etc/catalog/jmx.properties",
             "configFormat" : "properties",
+            "includedParams" : [],
             "excludedParams" : ["jvm_config"],
             "additionalConfigs" : [
               {
                 "key" : "connector.name",
                 "value" : "jmx"
+              }
+            ]
+          },
+          {
+            "filename" : "etc/catalog/default.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "raptor"
+              },
+              {
+                "key" : "metadata.db.type",
+                "value" : "h2"
+              },
+              {
+                "key" : "metadata.db.filename",
+                "value" : "./var/data/db/MetaStore"
+              },
+              {
+                "key" : "storage.data-directory",
+                "value" : "var/data"
+              }
+            ]
+          },
+          {
+            "filename" : "etc/catalog/tpch.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "tpch"
+              },
+              {
+                "key" : "tpch.splits-per-node",
+                "value" : "4"
               }
             ]
           },
