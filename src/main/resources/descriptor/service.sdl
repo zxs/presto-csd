@@ -168,10 +168,20 @@
           "default" : 8080
         },
         {
-          "name" : "task_max_memory",
-          "label" : "task",
-          "description" : "task.max-memory",
-          "configName" : "task.max-memory",
+          "name" : "query_max-memory",
+          "label" : "Query Max Memory",
+          "description" : "query.max-memory",
+          "configName" : "query.max-memory",
+          "required" : "true",
+          "type" : "memory",
+          "unit" : "bytes",
+          "default" : 53687091200
+        },
+        {
+          "name" : "query_max-memory-per-node",
+          "label" : "Query Max Memory per Node",
+          "description" : "query.max-memory-per-node",
+          "configName" : "query.max-memory-per-node",
           "required" : "true",
           "type" : "memory",
           "unit" : "bytes",
@@ -188,9 +198,10 @@
           "default" : [
             "-server",
             "-Xmx16G",
-            "-XX:+UseConcMarkSweepGC",
+            "-XX:+UseG1GC",
+            "-XX:G1HeapRegionSize=32M",
+            "-XX:+UseGCOverheadLimit",
             "-XX:+ExplicitGCInvokesConcurrent",
-            "-XX:+AggressiveOpts",
             "-XX:+HeapDumpOnOutOfMemoryError",
             "-XX:OnOutOfMemoryError=kill -9 %p"
           ]
@@ -201,7 +212,7 @@
           {
             "filename" : "etc/coordinator.config.properties",
             "configFormat" : "properties",
-            "includedParams" : ["discovery_uri", "coordinator_webui_port"],
+            "includedParams" : ["discovery_uri", "coordinator_webui_port", "query_max-memory", "query_max-memory-per-node"],
             "excludedParams" : ["jvm_config"],
             "additionalConfigs" : [
               {
@@ -367,6 +378,26 @@
             "filename" : "jvm.dummy.config",
             "configFormat" : "properties",
             "includedParams" : ["jvm_config"]
+          },
+          {
+            "filename" : "etc/catalog/alluxio.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "hive-cdh5"
+              },
+              {
+                "key" : "hive.metastore.uri",
+                "value" : "{{hive-metastore-uri}}"
+              },
+              {
+                "key" : "hive.config.resources",
+                "value" : "{{hive-conf}}/core-site.xml,{{hive-conf}}/hdfs-site.xml,{{hive-conf}}/hive-site.xml"
+              }
+            ]
           }
         ]
       }
@@ -416,10 +447,20 @@
           "default" : 8080
         },
         {
-          "name" : "task_max_memory",
-          "label" : "task",
-          "description" : "task.max-memory",
-          "configName" : "task.max-memory",
+          "name" : "query_max-memory",
+          "label" : "Query Max Memory",
+          "description" : "query.max-memory",
+          "configName" : "query.max-memory",
+          "required" : "true",
+          "type" : "memory",
+          "unit" : "bytes",
+          "default" : 53687091200
+        },
+        {
+          "name" : "query_max-memory-per-node",
+          "label" : "Query Max Memory per Node",
+          "description" : "query.max-memory-per-node",
+          "configName" : "query.max-memory-per-node",
           "required" : "true",
           "type" : "memory",
           "unit" : "bytes",
@@ -436,9 +477,10 @@
           "default" : [
             "-server",
             "-Xmx16G",
-            "-XX:+UseConcMarkSweepGC",
+            "-XX:+UseG1GC",
+            "-XX:G1HeapRegionSize=32M",
+            "-XX:+UseGCOverheadLimit",
             "-XX:+ExplicitGCInvokesConcurrent",
-            "-XX:+AggressiveOpts",
             "-XX:+HeapDumpOnOutOfMemoryError",
             "-XX:OnOutOfMemoryError=kill -9 %p"
           ]
@@ -449,7 +491,7 @@
           {
             "filename" : "etc/worker.config.properties",
             "configFormat" : "properties",
-            "includedParams" : ["discovery_uri", "worker_webui_port"],
+            "includedParams" : ["discovery_uri", "worker_webui_port", "query_max-memory", "query_max-memory-per-node"],
             "excludedParams" : ["jvm_config"],
             "additionalConfigs" : [
               {
@@ -611,6 +653,26 @@
             "filename" : "jvm.dummy.config",
             "configFormat" : "properties",
             "includedParams" : ["jvm_config"]
+          },
+          {
+            "filename" : "etc/catalog/alluxio.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "hive-cdh5"
+              },
+              {
+                "key" : "hive.metastore.uri",
+                "value" : "{{hive-metastore-uri}}"
+              },
+              {
+                "key" : "hive.config.resources",
+                "value" : "{{hive-conf}}/core-site.xml,{{hive-conf}}/hdfs-site.xml,{{hive-conf}}/hive-site.xml"
+              }
+            ]
           }
         ]
       }
@@ -660,10 +722,20 @@
           "default" : 8080
         },
         {
-          "name" : "task_max_memory",
-          "label" : "task",
-          "description" : "task.max-memory",
-          "configName" : "task.max-memory",
+          "name" : "query_max-memory",
+          "label" : "Query Max Memory",
+          "description" : "query.max-memory",
+          "configName" : "query.max-memory",
+          "required" : "true",
+          "type" : "memory",
+          "unit" : "bytes",
+          "default" : 53687091200
+        },
+        {
+          "name" : "query_max-memory-per-node",
+          "label" : "Query Max Memory per Node",
+          "description" : "query.max-memory-per-node",
+          "configName" : "query.max-memory-per-node",
           "required" : "true",
           "type" : "memory",
           "unit" : "bytes",
@@ -680,9 +752,10 @@
           "default" : [
             "-server",
             "-Xmx16G",
-            "-XX:+UseConcMarkSweepGC",
+            "-XX:+UseG1GC",
+            "-XX:G1HeapRegionSize=32M",
+            "-XX:+UseGCOverheadLimit",
             "-XX:+ExplicitGCInvokesConcurrent",
-            "-XX:+AggressiveOpts",
             "-XX:+HeapDumpOnOutOfMemoryError",
             "-XX:OnOutOfMemoryError=kill -9 %p"
           ]
@@ -693,7 +766,7 @@
           {
             "filename" : "etc/discovery.config.properties",
             "configFormat" : "properties",
-            "includedParams" : ["discovery_uri", "discovery_webui_port"],
+            "includedParams" : ["discovery_uri", "discovery_webui_port", "query_max-memory", "query_max-memory-per-node"],
             "excludedParams" : ["jvm_config"],
             "additionalConfigs" : [
               {
@@ -863,6 +936,26 @@
             "filename" : "jvm.dummy.config",
             "configFormat" : "properties",
             "includedParams" : ["jvm_config"]
+          },
+          {
+            "filename" : "etc/catalog/alluxio.properties",
+            "configFormat" : "properties",
+            "includedParams" : [],
+            "excludedParams" : ["jvm_config"],
+            "additionalConfigs" : [
+              {
+                "key" : "connector.name",
+                "value" : "hive-cdh5"
+              },
+              {
+                "key" : "hive.metastore.uri",
+                "value" : "{{hive-metastore-uri}}"
+              },
+              {
+                "key" : "hive.config.resources",
+                "value" : "{{hive-conf}}/core-site.xml,{{hive-conf}}/hdfs-site.xml,{{hive-conf}}/hive-site.xml"
+              }
+            ]
           }
         ]
       }

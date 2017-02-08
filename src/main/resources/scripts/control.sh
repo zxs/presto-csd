@@ -14,6 +14,8 @@ PHOENIX_CONF_PATH=$CONF_DIR/phoenix-conf
 IMPALA_CONF_PATH=$CONF_DIR/impala-conf
 
 CMD=$1
+PRESTO_CONF_FILE=$CONF_DIR/$2
+PRESTO_CONF_TEMP=$CONF_DIR/$2.tmp
 
 function log {
   timestamp=$(date)
@@ -52,6 +54,14 @@ function substitute_hive_conn_tokens {
   local __hive_metastore_uri=$(read_hadoop_site_property "${HIVE_CONF_PATH}/hive-site.xml" "hive.metastore.uris" | cut -f1 -d,)
   sed -i -e "s#{{hive-conf}}#${HIVE_CONF_PATH}#g" \
     -e "s#{{hive-metastore-uri}}#${__hive_metastore_uri}#g" $CONF_DIR/etc/catalog/hive.properties
+
+}
+
+function substitute_alluxio_conn_tokens {
+  [ -d "${HIVE_CONF_PATH}" ] || return ;
+  local __hive_metastore_uri=$(read_hadoop_site_property "${HIVE_CONF_PATH}/hive-site.xml" "hive.metastore.uris" | cut -f1 -d,)
+  sed -i -e "s#{{hive-conf}}#${HIVE_CONF_PATH}#g" \
+    -e "s#{{hive-metastore-uri}}#${__hive_metastore_uri}#g" $CONF_DIR/etc/catalog/alluxio.properties
 
 }
 
@@ -94,6 +104,10 @@ function substitute_impala_conn_tokens {
     -e "s#{{impala_connection_info}}#${__impala_connection_info}#g" $CONF_DIR/etc/catalog/impala.properties
 }
 
+function modify_config_file {
+    awk -F"=" '/query.max-memory/{print $1 "=" $2 "B" ;next}1' ${PRESTO_CONF_FILE} > ${PRESTO_CONF_TEMP}
+    cp ${PRESTO_CONF_TEMP} ${PRESTO_CONF_FILE}
+}
 
 function link_files {
   cp -r $CDH_PRESTO_HOME/bin $CONF_DIR
@@ -128,6 +142,8 @@ case $CMD in
     substitute_hive_conn_tokens
     substitute_phoenix_conn_tokens
     substitute_impala_conn_tokens
+    substitute_alluxio_conn_tokens
+    modify_config_file
     ARGS=("--config")
     ARGS+=("$CONF_DIR/$2")
     ARGS+=("--data-dir")
@@ -142,6 +158,8 @@ case $CMD in
     substitute_hive_conn_tokens
     substitute_phoenix_conn_tokens
     substitute_impala_conn_tokens
+    substitute_alluxio_conn_tokens
+    modify_config_file
     ARGS=("--config")
     ARGS+=("$CONF_DIR/$2")
     ARGS+=("--data-dir")
@@ -156,6 +174,8 @@ case $CMD in
     substitute_hive_conn_tokens
     substitute_phoenix_conn_tokens
     substitute_impala_conn_tokens
+    substitute_alluxio_conn_tokens
+    modify_config_file
     ARGS=("--config")
     ARGS+=("$CONF_DIR/$2")
     ARGS+=("--data-dir")
