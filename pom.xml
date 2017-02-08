@@ -5,12 +5,12 @@
   <parent>
     <groupId>com.facebook.presto</groupId>
     <artifactId>presto-assembly</artifactId>
-    <version>0.139-cdh5.5.2</version>
+    <version>0.139.2-cdh5.5.2</version>
   </parent>
 
   <groupId>com.facebook.presto.csd</groupId>
   <artifactId>PRESTO</artifactId>
-  <version>0.139-cdh5.5.2</version>
+  <version>0.139.2-cdh5.5.2</version>
   <name>presto-csd</name>
 
   <properties>
